@@ -10,20 +10,63 @@ class WordCountAndTimePlugin {
 	function __construct() {
 		add_action('admin_menu', array($this, 'admin_page'));
         add_action('admin_init', array($this, 'settings'));
+        add_filter('the_content', array($this, 'if_wrap'));
 	}
+
+    function if_wrap($content) {
+        if((is_main_query() AND
+            is_single()) AND (
+                get_option('wcp_wordcount', '1') OR
+                get_option('wcp_charcount', '1') OR
+                get_option('wcp_readtime', '1')
+        )) {
+            return $this->create_html($content);
+        }
+        return $content;
+    }
+
+    function create_html($content) {
+        return $content . ' HELLO';
+    }
 
     function settings() {
         add_settings_section('wcp_first_section', null, null, 'word-count-settings-page');
 
         // Location
+
 	    add_settings_field('wcp_location', 'Display Location', array($this, 'location_html'), 'word-count-settings-page', 'wcp_first_section');
-	    register_setting('wordcountplugin', 'wcp_location', array('sanitize_callback' => 'sanitize_text_field', 'default' => '0'));
+	    register_setting('wordcountplugin', 'wcp_location', array('sanitize_callback' => array($this, 'sanitize_location'), 'default' => '0'));
+
         // 0 - Display at the beginning; 1 - display at the end
 
         //Headline
+
 	    add_settings_field('wcp_headline', 'Headline Text', array($this, 'headline_html'), 'word-count-settings-page', 'wcp_first_section');
 	    register_setting('wordcountplugin', 'wcp_headline', array('sanitize_callback' => 'sanitize_text_field', 'default' => 'Post Statistics'));
+
+        // Checkboxes
+
+	    add_settings_field('wcp_wordcount', 'Word Count', array($this, 'checkbox_html'), 'word-count-settings-page', 'wcp_first_section', array('the_name' => 'wcp_wordcount'));
+	    register_setting('wordcountplugin', 'wcp_wordcount', array('sanitize_callback' => 'sanitize_text_field', 'default' => '1'));
+
+	    add_settings_field('wcp_charcount', 'Character Count', array($this, 'checkbox_html'), 'word-count-settings-page', 'wcp_first_section', array('the_name' => 'wcp_charcount'));
+	    register_setting('wordcountplugin', 'wcp_charcount', array('sanitize_callback' => 'sanitize_text_field', 'default' => '1'));
+
+	    add_settings_field('wcp_readtime', 'Read Time', array($this, 'checkbox_html'), 'word-count-settings-page', 'wcp_first_section', array('the_name' => 'wcp_readtime'));
+	    register_setting('wordcountplugin', 'wcp_readtime', array('sanitize_callback' => 'sanitize_text_field', 'default' => '1'));
     }
+
+    function sanitize_location($input) {
+        if($input != 0 AND $input != 1) {
+            add_settings_error('wcp_location', 'wcp_location_error', 'Display location must be either beginning or end');
+            return get_option('wcp_location');
+        }
+        return $input;
+    }
+
+    function checkbox_html($type) { ?>
+        <input type="checkbox" name="<?php echo $type['the_name']?>" value="1" <?php echo checked(get_option($type['the_name'], '1')); ?>>
+    <?php }
 
     function headline_html() { ?>
         <input type="text" name="wcp_headline" value="<?php echo esc_attr(get_option('wcp_headline')) ?>">
