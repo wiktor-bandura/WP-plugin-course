@@ -35,12 +35,18 @@ class WordCountAndTimePlugin {
         }
 
         if(get_option('wcp_wordcount', '1')) {
-            $html .= 'This post has '. $word_count .' words <br>';
+            $html .= 'This post has '. $word_count .' words. <br>';
         }
 
 	    if(get_option('wcp_charcount', '1')) {
-		    $html .= 'This post has '. $word_count .' characters <br>';
+		    $html .= 'This post has '. strlen(strip_tags($content)) .' characters. <br>';
 	    }
+
+        if(get_option('wcp_readtime', '1')) {
+            $html .= 'This post will take about '. round($word_count / 225) . ' minute(s) to read. <br>';
+        }
+
+        $html .= '</p>';
 
         if(get_option('wcp_location', '0') == '0') {
             return $html . $content;
