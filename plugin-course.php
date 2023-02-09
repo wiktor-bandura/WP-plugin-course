@@ -26,7 +26,26 @@ class WordCountAndTimePlugin {
     }
 
     function create_html($content) {
-        return $content . ' HELLO';
+        $html = '<h3>'.get_option('wcp_headline', 'Post Statistics').'</h3><p>';
+
+        // get word count once
+
+        if(get_option('wcp_wordcount', '1') OR get_option('wcp_readtime', '1')) {
+	        $word_count = str_word_count( strip_tags( $content ) );
+        }
+
+        if(get_option('wcp_wordcount', '1')) {
+            $html .= 'This post has '. $word_count .' words <br>';
+        }
+
+	    if(get_option('wcp_charcount', '1')) {
+		    $html .= 'This post has '. $word_count .' characters <br>';
+	    }
+
+        if(get_option('wcp_location', '0') == '0') {
+            return $html . $content;
+        }
+        return $content . $html;
     }
 
     function settings() {
