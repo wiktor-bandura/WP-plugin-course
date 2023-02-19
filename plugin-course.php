@@ -4,6 +4,8 @@
 	Description: Simple WordPress plugin.
 	Version: 1.0
 	Author: Wiktor & Brad
+    Text Domain: wcpdomain
+    Domain Path: /languages
 */
 
 class WordCountAndTimePlugin {
@@ -11,7 +13,12 @@ class WordCountAndTimePlugin {
 		add_action('admin_menu', array($this, 'admin_page'));
         add_action('admin_init', array($this, 'settings'));
         add_filter('the_content', array($this, 'if_wrap'));
+        add_action('init', array($this, 'languages'));
 	}
+
+    function languages() {
+        load_plugin_textdomain('wcpdomain', false, dirname(plugin_basename(__FILE__)) . '/languages');
+    }
 
     function if_wrap($content) {
         if((is_main_query() AND
@@ -35,15 +42,15 @@ class WordCountAndTimePlugin {
         }
 
         if(get_option('wcp_wordcount', '1')) {
-            $html .= 'This post has '. $word_count .' words. <br>';
+            $html .= __('This post has', 'wcpdomain') . ' ' . $word_count . ' ' . __('words', 'wcpdomain');
         }
 
 	    if(get_option('wcp_charcount', '1')) {
-		    $html .= 'This post has '. strlen(strip_tags($content)) .' characters. <br>';
+		    $html .= __('This post has', 'wcpdomain') . ' ' . strlen(strip_tags($content)) . ' ' . __('characters', 'wcpdomain');
 	    }
 
         if(get_option('wcp_readtime', '1')) {
-            $html .= 'This post will take about '. round($word_count / 225) . ' minute(s) to read. <br>';
+            $html .= __('This post will take about', 'wcpdomain') . ' ' . round($word_count / 225) . ' ' . __('minute(s) to read', 'wcpdomain');
         }
 
         $html .= '</p>';
@@ -105,7 +112,7 @@ class WordCountAndTimePlugin {
     <?php }
 
 	function admin_page() {
-		add_options_page('Word Count Settings', 'Word Count', 'manage_options', 'word-count-settings-page', array($this, 'settings_page_template'));
+		add_options_page('Word Count Settings', __('Word Count', 'wcpdomain'), 'manage_options', 'word-count-settings-page', array($this, 'settings_page_template'));
 	}
 
 	function settings_page_template() { ?>
